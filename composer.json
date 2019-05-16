@@ -1,0 +1,23 @@
+{
+  "name": "18y/allinpay",
+  "description": "通联支付",
+  "keywords": ["18y", "allinpay", "aipboss"],
+  "type": "library",
+  "homepage": "https://github.com/18y",
+  "license": "MIT",
+  "authors": [
+      {
+          "name": "18y",
+          "email": "cmphper@163.com"
+      }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "php": ">=5.5.38"
+  },
+  "autoload": {
+    "psr-4": {
+      "allinpay\\": "src/"
+    }
+  }
+}
