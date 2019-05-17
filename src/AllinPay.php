@@ -1,5 +1,6 @@
 <?php 
 namespace allinpay;
+
 use allinpay\base\PayException;
 use allinpay\base\AppUtil;
 use allinpay\base\WechatJsapi;
@@ -48,6 +49,7 @@ class AllinPay
 			throw new PayException("微信 appid 参数错误");
 		}
 	}
+
 	/**
 	 * 微信jsapi支付
 	 * @author 18y
@@ -90,7 +92,8 @@ class AllinPay
 		$params["idno"] = "";
 		$params["truename"] = "";
 		$params["asinfo"] = "";
-        $params["notify_url"] = $this->config["notify_url"];
+		// 支付回调，通联那边是不判断不能为空的，如果没收到回调，调试下支付回调地址
+        $params["notify_url"] = !empty($order["notify_url"]) ? $order["notify_url"] : $this->config["notify_url"];
 	    $params["sign"] = AppUtil::SignArray($params, $this->config["appkey"]);//签名
 	    $paramsStr = AppUtil::ToUrlParams($params);
 	    $url = $this->config["apiurl"] . "/pay";
@@ -112,8 +115,8 @@ class AllinPay
 	    		// 交易成功
 	    		if($res["trxstatus"] == '0000')
 	    		{
-	    			// 看看 payinfo 是啥
-	    			return true;
+	    			// 返回js支付参数
+	    			return $res["payinfo"];
 	    		}
 	    	}
 	    	return false;
@@ -139,22 +142,18 @@ class AllinPay
 			}
 			if(AppUtil::ValidSign($params, $this->config["appkey"])){//验签成功
 				//此处进行业务逻辑处理
-	    		$msg = '验证签名成功';
 		    	if(false !== $callback)
 		    	{
-		    		// 确认订单
+		    		// 确认订单, 返回 true 代表处理成功
 		    		$res = call_user_func($callback, $params);
-		            if($res["code"] == 1)
+		            if(true === $res)
 		            {
-		            	$msg = $res["msg"];
 		            	echo "success";
-		            }
-		            if(empty($res) || $res['code'] == 0)
-		            {
-						$msg = "订单确认失败";
+		            }else{
 						echo "error";
 		            }
 		    	}else{
+		    		// 不进行任何处理
 					echo "success";
 		    	}
 			}
@@ -163,16 +162,15 @@ class AllinPay
 				echo "error";
 			}
 		}
-
 	}
-
 
 	/**
 	 * 订单查询
 	 * @author 18y
-	 * @anotherdate 2019-05-16T09:57:46+0800
-	 * @param       [type]                   $reqsn 商户订单号
-	 * @return      [type]                          [description]
+	 * @anotherdate 2019-05-17T10:28:41+0800
+	 * @param       string                   $reqsn    商户订单号
+	 * @param       boolean                  $callback 回调函数
+	 * @return      [type]                          交易成功返回 true，失败或异常返回 false
 	 */
 	public function QueryOrder($reqsn, $callback = false)
 	{
@@ -207,7 +205,6 @@ class AllinPay
 	    		// 交易成功
 	    		if($res["trxstatus"] == '0000')
 	    		{
-	    			// 看看 payinfo 是啥
 	    			return true;
 	    		}
 	    	}

@@ -1,7 +1,11 @@
 <?php
 namespace allinpay\base;
+
 use allinpay\base\AppUtil;
 
+/**
+ * 获取微信openid
+ */
 class WechatJsapi{
 
 	private $config = array(); 

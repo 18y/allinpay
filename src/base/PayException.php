@@ -1,5 +1,6 @@
 <?php
 namespace allinpay\base;
+
 use Exception;
 
 /**
